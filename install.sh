@@ -76,47 +76,73 @@ show_menu() {
     echo -e "${CYAN}${BOLD}Selecione os componentes para instalar:${NC}"
     echo ""
     
-    # PostgreSQL
-    local postgres_status=""
+    # PostgreSQL - sempre mostra (permite múltiplas instalações)
+    local postgres_installed=false
     if check_component_installed "postgres"; then
-        postgres_status=" ${GREEN}(instalado)${NC}"
-    fi
-    if [ "$INSTALL_POSTGRES" = true ]; then
-        echo -e "  ${GREEN}[X]${NC} 1. PostgreSQL - Banco de dados${postgres_status}"
-    else
-        echo -e "  [ ] 1. PostgreSQL - Banco de dados${postgres_status}"
+        postgres_installed=true
     fi
     
-    # n8n
-    local n8n_status=""
+    if [ "$postgres_installed" = true ]; then
+        if [ "$INSTALL_POSTGRES" = true ]; then
+            echo -e "  ${GREEN}[X]${NC} 1. PostgreSQL - Banco de dados ${GREEN}✓ instalado${NC}"
+        else
+            echo -e "  [ ] 1. PostgreSQL - Banco de dados ${GREEN}✓ instalado${NC}"
+        fi
+    else
+        if [ "$INSTALL_POSTGRES" = true ]; then
+            echo -e "  ${GREEN}[X]${NC} 1. PostgreSQL - Banco de dados"
+        else
+            echo -e "  [ ] 1. PostgreSQL - Banco de dados"
+        fi
+    fi
+    
+    # n8n - oculta se já instalado
     if check_component_installed "n8n"; then
-        n8n_status=" ${GREEN}(instalado)${NC}"
-    fi
-    if [ "$INSTALL_N8N" = true ]; then
-        echo -e "  ${GREEN}[X]${NC} 2. n8n - Automação de workflows ${YELLOW}(requer PostgreSQL)${NC}${n8n_status}"
+        echo -e "      ${GREEN}✓ n8n - Automação de workflows (já instalado)${NC}"
     else
-        echo -e "  [ ] 2. n8n - Automação de workflows ${YELLOW}(requer PostgreSQL)${NC}${n8n_status}"
+        if [ "$INSTALL_N8N" = true ]; then
+            echo -e "  ${GREEN}[X]${NC} 2. n8n - Automação de workflows ${YELLOW}(requer PostgreSQL)${NC}"
+        else
+            echo -e "  [ ] 2. n8n - Automação de workflows ${YELLOW}(requer PostgreSQL)${NC}"
+        fi
     fi
     
-    # Caddy
-    local caddy_status=""
+    # Caddy - oculta se já instalado
     if check_component_installed "caddy"; then
-        caddy_status=" ${GREEN}(instalado)${NC}"
-    fi
-    if [ "$INSTALL_CADDY" = true ]; then
-        echo -e "  ${GREEN}[X]${NC} 3. Caddy - Reverse proxy com HTTPS${caddy_status}"
+        echo -e "      ${GREEN}✓ Caddy - Reverse proxy com HTTPS (já instalado)${NC}"
     else
-        echo -e "  [ ] 3. Caddy - Reverse proxy com HTTPS${caddy_status}"
+        if [ "$INSTALL_CADDY" = true ]; then
+            echo -e "  ${GREEN}[X]${NC} 3. Caddy - Reverse proxy com HTTPS"
+        else
+            echo -e "  [ ] 3. Caddy - Reverse proxy com HTTPS"
+        fi
     fi
     
     echo ""
     echo -e "${CYAN}Opções:${NC}"
-    echo -e "  ${GREEN}[1-3]${NC} Marcar/desmarcar componente"
-    echo -e "  ${GREEN}[A]${NC}   Stack completa (PostgreSQL + n8n + Caddy)"
+    
+    # Ajustar opções baseado no que está disponível
+    local available_options="1"
+    if ! check_component_installed "n8n"; then
+        available_options="${available_options}-2"
+    fi
+    if ! check_component_installed "caddy"; then
+        if [ "$available_options" = "1" ]; then
+            available_options="${available_options}, 3"
+        else
+            available_options="${available_options}, 3"
+        fi
+    fi
+    
+    echo -e "  ${GREEN}[${available_options}]${NC} Marcar/desmarcar componente"
+    
+    # Só mostra opção A se n8n e caddy não estiverem instalados
+    if ! check_component_installed "n8n" && ! check_component_installed "caddy"; then
+        echo -e "  ${GREEN}[A]${NC}   Stack completa (PostgreSQL + n8n + Caddy)"
+    fi
+    
     echo -e "  ${GREEN}[I]${NC}   Instalar selecionados"
     echo -e "  ${RED}[Q]${NC}   Sair"
-    echo ""
-    echo -e "${YELLOW}Nota:${NC} n8n e Caddy permitem apenas 1 instalação. PostgreSQL permite múltiplas."
     echo ""
     echo -n "Escolha: "
 }
