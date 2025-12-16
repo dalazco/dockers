@@ -54,6 +54,15 @@ check_docker_installed() {
     fi
 }
 
+check_component_installed() {
+    local component=$1
+    if docker ps -a --format "{{.Names}}" 2>/dev/null | grep -q "^${component}$"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 show_menu() {
     show_header
     
@@ -67,29 +76,44 @@ show_menu() {
     echo -e "${CYAN}${BOLD}Selecione os componentes para instalar:${NC}"
     echo ""
     
+    # PostgreSQL
+    local postgres_status=""
+    if check_component_installed "postgres"; then
+        postgres_status=" ${GREEN}(instalado)${NC}"
+    fi
     if [ "$INSTALL_POSTGRES" = true ]; then
-        echo -e "  ${GREEN}[X]${NC} 1. PostgreSQL - Banco de dados"
+        echo -e "  ${GREEN}[X]${NC} 1. PostgreSQL - Banco de dados${postgres_status}"
     else
-        echo -e "  [ ] 1. PostgreSQL - Banco de dados"
+        echo -e "  [ ] 1. PostgreSQL - Banco de dados${postgres_status}"
     fi
     
+    # n8n
+    local n8n_status=""
+    if check_component_installed "n8n"; then
+        n8n_status=" ${GREEN}(instalado)${NC}"
+    fi
     if [ "$INSTALL_N8N" = true ]; then
-        echo -e "  ${GREEN}[X]${NC} 2. n8n - Automação de workflows ${YELLOW}(requer PostgreSQL)${NC}"
+        echo -e "  ${GREEN}[X]${NC} 2. n8n - Automação de workflows ${YELLOW}(requer PostgreSQL)${NC}${n8n_status}"
     else
-        echo -e "  [ ] 2. n8n - Automação de workflows ${YELLOW}(requer PostgreSQL)${NC}"
+        echo -e "  [ ] 2. n8n - Automação de workflows ${YELLOW}(requer PostgreSQL)${NC}${n8n_status}"
     fi
     
+    # Caddy
+    local caddy_status=""
+    if check_component_installed "caddy"; then
+        caddy_status=" ${GREEN}(instalado)${NC}"
+    fi
     if [ "$INSTALL_CADDY" = true ]; then
-        echo -e "  ${GREEN}[X]${NC} 3. Caddy - Reverse proxy com HTTPS"
+        echo -e "  ${GREEN}[X]${NC} 3. Caddy - Reverse proxy com HTTPS${caddy_status}"
     else
-        echo -e "  [ ] 3. Caddy - Reverse proxy com HTTPS"
+        echo -e "  [ ] 3. Caddy - Reverse proxy com HTTPS${caddy_status}"
     fi
     
     echo ""
     echo -e "${CYAN}Opções:${NC}"
     echo -e "  ${GREEN}[1-3]${NC} Marcar/desmarcar componente"
     echo -e "  ${GREEN}[A]${NC}   Stack completa (PostgreSQL + n8n + Caddy)"
-    echo -e "  ${GREEN}[I]${NC}   Instalar selecionados"
+    echo -e "  ${GREEN}[I]${NC}   Instalar/Reinstalar selecionados"
     echo -e "  ${RED}[Q]${NC}   Sair"
     echo ""
     echo -n "Escolha: "
