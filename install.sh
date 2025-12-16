@@ -446,6 +446,10 @@ bootstrap_install() {
 if [ "$REMOTE_INSTALL" = true ]; then
     check_root
     bootstrap_install
+    # Após clonar, executar o script localmente (não via stdin)
+    exec "$INSTALL_DIR/install.sh"
+else
+    # Execução local normal
+    check_root
+    main
 fi
-
-main
