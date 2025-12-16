@@ -440,14 +440,17 @@ bootstrap_install() {
     echo ""
     echo -e "${GREEN}Iniciando instalação...${NC}"
     echo ""
+    
+    # Executar o script diretamente do arquivo (não via stdin)
+    bash "$INSTALL_DIR/install.sh"
+    exit $?
 }
 
 # Ponto de entrada
 if [ "$REMOTE_INSTALL" = true ]; then
     check_root
     bootstrap_install
-    # Após clonar, executar o script localmente (não via stdin)
-    exec "$INSTALL_DIR/install.sh"
+    # bootstrap_install já executa o script local e faz exit
 else
     # Execução local normal
     check_root
