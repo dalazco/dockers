@@ -55,8 +55,7 @@ O instalador apresenta um menu completo onde você escolhe exatamente o que inst
 
 ```
 /opt/dockers/
-├── install.sh              # Script de instalação rápida
-├── setup.sh                # Menu interativo de configuração
+├── install.sh              # Script único de instalação
 ├── uninstall.sh            # Desinstalador completo
 ├── scripts/
 │   ├── postgres/          # Scripts do PostgreSQL
@@ -74,7 +73,7 @@ Se preferir clonar o repositório manualmente:
 ```bash
 git clone https://github.com/dalazco/dockers.git /opt/dockers
 cd /opt/dockers
-sudo ./setup.sh
+sudo ./install.sh
 ```
 
 ## 🔐 Segurança
