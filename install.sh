@@ -113,8 +113,10 @@ show_menu() {
     echo -e "${CYAN}Opções:${NC}"
     echo -e "  ${GREEN}[1-3]${NC} Marcar/desmarcar componente"
     echo -e "  ${GREEN}[A]${NC}   Stack completa (PostgreSQL + n8n + Caddy)"
-    echo -e "  ${GREEN}[I]${NC}   Instalar/Reinstalar selecionados"
+    echo -e "  ${GREEN}[I]${NC}   Instalar selecionados"
     echo -e "  ${RED}[Q]${NC}   Sair"
+    echo ""
+    echo -e "${YELLOW}Nota:${NC} n8n e Caddy permitem apenas 1 instalação. PostgreSQL permite múltiplas."
     echo ""
     echo -n "Escolha: "
 }
@@ -126,23 +128,71 @@ select_components() {
         
         case $option in
             1)
+                # PostgreSQL pode ter múltiplas instalações
                 INSTALL_POSTGRES=$([ "$INSTALL_POSTGRES" = true ] && echo false || echo true)
                 ;;
             2)
+                # n8n - verificar se já está instalado
+                if check_component_installed "n8n"; then
+                    show_header
+                    echo -e "${YELLOW}⚠  n8n já está instalado!${NC}"
+                    echo ""
+                    echo "Para reinstalar, primeiro desinstale usando:"
+                    echo -e "  ${CYAN}cd /opt/dockers && ./uninstall.sh${NC}"
+                    echo ""
+                    read -p "Pressione ENTER para continuar..." </dev/tty
+                    continue
+                fi
                 INSTALL_N8N=$([ "$INSTALL_N8N" = true ] && echo false || echo true)
                 if [ "$INSTALL_N8N" = true ]; then
                     INSTALL_POSTGRES=true
                 fi
                 ;;
             3)
+                # Caddy - verificar se já está instalado
+                if check_component_installed "caddy"; then
+                    show_header
+                    echo -e "${YELLOW}⚠  Caddy já está instalado!${NC}"
+                    echo ""
+                    echo "Para reinstalar, primeiro desinstale usando:"
+                    echo -e "  ${CYAN}cd /opt/dockers && ./uninstall.sh${NC}"
+                    echo ""
+                    read -p "Pressione ENTER para continuar..." </dev/tty
+                    continue
+                fi
                 INSTALL_CADDY=$([ "$INSTALL_CADDY" = true ] && echo false || echo true)
                 ;;
             [Aa])
+                # Verificar se n8n ou caddy já estão instalados
+                local blocked=false
+                local blocked_msg=""
+                
+                if check_component_installed "n8n"; then
+                    blocked=true
+                    blocked_msg="${blocked_msg}n8n "
+                fi
+                if check_component_installed "caddy"; then
+                    blocked=true
+                    blocked_msg="${blocked_msg}caddy "
+                fi
+                
+                if [ "$blocked" = true ]; then
+                    show_header
+                    echo -e "${YELLOW}⚠  Componentes já instalados: ${blocked_msg}${NC}"
+                    echo ""
+                    echo "Para reinstalar, primeiro desinstale usando:"
+                    echo -e "  ${CYAN}cd /opt/dockers && ./uninstall.sh${NC}"
+                    echo ""
+                    read -p "Pressione ENTER para continuar..." </dev/tty
+                    continue
+                fi
+                
                 INSTALL_POSTGRES=true
                 INSTALL_N8N=true
                 INSTALL_CADDY=true
                 ;;
             [Ii])
+                # Verificar se tem componentes selecionados
                 if [ "$INSTALL_POSTGRES" = false ] && [ "$INSTALL_N8N" = false ] && [ "$INSTALL_CADDY" = false ]; then
                     show_header
                     echo -e "${RED}✗ Selecione pelo menos um componente!${NC}"
@@ -150,6 +200,33 @@ select_components() {
                     read -p "Pressione ENTER para continuar..." </dev/tty
                     continue
                 fi
+                
+                # Verificar se está tentando instalar n8n ou caddy já instalados
+                local blocked=false
+                local blocked_msg=""
+                
+                if [ "$INSTALL_N8N" = true ] && check_component_installed "n8n"; then
+                    blocked=true
+                    blocked_msg="${blocked_msg}n8n "
+                fi
+                if [ "$INSTALL_CADDY" = true ] && check_component_installed "caddy"; then
+                    blocked=true
+                    blocked_msg="${blocked_msg}caddy "
+                fi
+                
+                if [ "$blocked" = true ]; then
+                    show_header
+                    echo -e "${RED}✗ Não é possível instalar componentes já existentes!${NC}"
+                    echo ""
+                    echo -e "Componentes bloqueados: ${YELLOW}${blocked_msg}${NC}"
+                    echo ""
+                    echo "Para reinstalar, primeiro desinstale usando:"
+                    echo -e "  ${CYAN}cd /opt/dockers && ./uninstall.sh${NC}"
+                    echo ""
+                    read -p "Pressione ENTER para continuar..." </dev/tty
+                    continue
+                fi
+                
                 break
                 ;;
             [Qq])
