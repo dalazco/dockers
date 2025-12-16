@@ -417,10 +417,7 @@ bootstrap_install() {
     
     # Verificar se o diretório já existe
     if [ -d "$INSTALL_DIR/.git" ]; then
-        echo -e "${CYAN}► Atualizando repositório...${NC}"
-        cd "$INSTALL_DIR"
-        git pull -q origin main 2>/dev/null || true
-        echo -e "${GREEN}  ✓ Repositório atualizado${NC}"
+        echo -e "${GREEN}✓ Repositório já existe em $INSTALL_DIR${NC}"
     else
         if [ -d "$INSTALL_DIR" ]; then
             echo -e "${YELLOW}⚠  Diretório $INSTALL_DIR já existe (sem git)${NC}"
@@ -438,7 +435,7 @@ bootstrap_install() {
     chmod +x install.sh uninstall.sh scripts/*/install.sh 2>/dev/null || true
     
     echo ""
-    echo -e "${GREEN}Iniciando instalação...${NC}"
+    echo -e "${CYAN}Iniciando menu de instalação...${NC}"
     echo ""
     
     # Executar o script diretamente do arquivo com flag de bootstrap
