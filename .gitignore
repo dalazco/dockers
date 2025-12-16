@@ -1,0 +1,10 @@
+# Dados dos containers (volumes persistentes)
+data/
+configs/
+
+# Templates gerados dinamicamente
+templates/Caddyfile
+
+# Scripts temporários
+get-docker.sh
+*.broken
