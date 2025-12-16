@@ -13,8 +13,8 @@ INSTALL_CADDY=false
 INSTALL_DIR="/opt/dockers"
 REPO_URL="https://github.com/dalazco/dockers.git"
 
-# Verificar se está rodando via curl/wget (stdin não é terminal)
-if [ ! -t 0 ]; then
+# Verificar se está rodando via curl/wget (stdin não é terminal) e não foi bootstrapped
+if [ ! -t 0 ] && [ -z "$DOCKERS_BOOTSTRAPPED" ]; then
     REMOTE_INSTALL=true
 else
     REMOTE_INSTALL=false
@@ -441,8 +441,8 @@ bootstrap_install() {
     echo -e "${GREEN}Iniciando instalação...${NC}"
     echo ""
     
-    # Executar o script diretamente do arquivo (não via stdin)
-    bash "$INSTALL_DIR/install.sh"
+    # Executar o script diretamente do arquivo com flag de bootstrap
+    DOCKERS_BOOTSTRAPPED=1 bash "$INSTALL_DIR/install.sh"
     exit $?
 }
 
