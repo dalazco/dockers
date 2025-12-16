@@ -98,7 +98,7 @@ show_menu() {
 select_components() {
     while true; do
         show_menu
-        read -r option
+        read -r option </dev/tty
         
         case $option in
             1)
@@ -123,7 +123,7 @@ select_components() {
                     show_header
                     echo -e "${RED}✗ Selecione pelo menos um componente!${NC}"
                     echo ""
-                    read -p "Pressione ENTER para continuar..."
+                    read -p "Pressione ENTER para continuar..." </dev/tty
                     continue
                 fi
                 break
@@ -203,8 +203,8 @@ get_user_input() {
     echo ""
     
     if [ "$INSTALL_CADDY" = true ]; then
-        read -p "Domínio para acesso (ex: n8n.seudominio.com): " DOMAIN
-        read -p "Email para certificado SSL: " SSL_EMAIL
+        read -p "Domínio para acesso (ex: n8n.seudominio.com): " DOMAIN </dev/tty
+        read -p "Email para certificado SSL: " SSL_EMAIL </dev/tty
         export DOMAIN
         export SSL_EMAIL
     fi
